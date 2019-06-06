@@ -23,7 +23,7 @@ OSArchiver reads an INI configuration file in which you can define:
 * sources: a section that define a source of where the data should be read (basically the OS DB)
 * destinations: a section that define where the data should be archived
 
-# How does it works:                                                            
+# How does it works:
 
 
 
@@ -44,26 +44,48 @@ OSArchiver reads an INI configuration file in which you can define:
           v                                      |                                     |
     OpenStack DB                                 v                                     |
       _.-----._                    .--------------------------.         Archiving DB   |
-    .-         -.                 ( No error and delete_data=1 )          _.-----._    |   ___   
-    |-_       _-|                  '--------------------------'         .-         -.  |  |   |\ 
-    |  ~-----~  |                                |                      |-_       _-|  |  |   ' ___   
-    |           |                                |                      |  ~-----~  |<-'->| SQL|   |\ 
+    .-         -.                 ( No error and delete_data=1 )          _.-----._    |   ___
+    |-_       _-|                  '--------------------------'         .-         -.  |  |   |\
+    |  ~-----~  |                                |                      |-_       _-|  |  |   ' ___
+    |           |                                |                      |  ~-----~  |<-'->| SQL|   |\
     `._       _.'                                |                      |           |     |____|   '-|
        "-----"                                   |                      `._       _.'          | CSV |
           ^                                      |                         "-----"             |_____|
-          |                                      v                                                    
+          |                                      v
           |                              ______________
           |                              \             \
           '-------------------------------) DELETE DATA )
                                          /_____________/
 
 
-# Installation                                                            
+# Installation
 
+```
+pip install git+https://github.com/ovh/osarchiver
+```
+
+# osarchiver script
+
+```
+# osarchiver --help
+usage: osarchiver [-h] --config CONFIG [--log-file LOG_FILE]
+                  [--log-level {info,warn,error,debug}] [--debug] [--dry-run]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --config CONFIG       Configuration file to read
+  --log-file LOG_FILE   Append log to the specified file
+  --log-level {info,warn,error,debug}
+                        Set log level
+  --debug               Enable debug mode
+  --dry-run             Display what would be done without really deleting or
+                        writing data
+```
 
 # Configuration
 The configuation is an INI file containing several sections. You configure your
-differents archivers in this configuration file.
+differents archivers in this configuration file. An example is available at the
+root of the repository.
 
 ## DEFAULT section:
 * Drescription: default section that define default/fallback value for options
@@ -129,7 +151,7 @@ dst: file, db
 * options:
     * **host**: DB host to connect to
     * **port**: port of MariaDB server is running on
-    * **user**: login of MariaDB server to connect with 
+    * **user**: login of MariaDB server to connect with
     * **password**: password of user
     * **delete_limit**: apply a LIMIT to DELETE statement
     * **select_limit**: apply a LIMIT to SELECT statement
@@ -164,14 +186,14 @@ dst: file, db
 You've developed a new cool feature ? Fixed an annoying bug ? We'd be happy
 
 to hear from you !
- 
+
 Have a look in [CONTRIBUTING.md](https://github.com/ovh/osarchiver/blob/master/CONTRIBUTING.md)
 
 # Related links
- 
+
  * Contribute: https://github.com/ovh/osarchiver/blob/master/CONTRIBUTING.md
  * Report bugs: https://github.com/ovh/osarchiver/issues
- 
+
 # License
- 
+
 See https://github.com/ovh/osarchiver/blob/master/LICENSE

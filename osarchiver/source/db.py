@@ -339,7 +339,7 @@ class Db(Source, DbBase):
                     logging.debug(
                         "Waiting %s seconds before deleting next"
                         "subset of data ", self.delete_loop_delay)
-                    time.sleep(self.delete_loop_delay)
+                    time.sleep(int(self.delete_loop_delay))
 
                 sql = "DELETE FROM `{database}`.`{table}` WHERE "\
                     "`{pk}` IN ({ids}) LIMIT {limit}".format(
@@ -366,7 +366,7 @@ class Db(Source, DbBase):
 
             logging.debug("Waiting %s seconds after a deletion",
                           self.delete_loop_delay)
-            time.sleep(self.delete_loop_delay)
+            time.sleep(int(self.delete_loop_delay))
 
     def delete(self, database=None, table=None, limit=None, data=None):
         """

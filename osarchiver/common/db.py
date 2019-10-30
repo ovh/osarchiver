@@ -135,7 +135,7 @@ class DbBase():
         """
         logging.debug("Sleeping %s sec before retrying....",
                       self.retry_time_limit)
-        time.sleep(self.retry_time_limit)
+        time.sleep(int(self.retry_time_limit))
         # Handle auto reconnect
         if not self.connection.open:
             logging.info("Re-opening connection which seems abnormaly "

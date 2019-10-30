@@ -204,8 +204,6 @@ class Db(Source, DbBase):
                     children_tables.remove(grandchild)
                 children_tables.append(grandchild)
 
-            children_tables = grandchildren
-
         children_tables.append({'table_name': table, 'table_schema': database})
         logging.debug("Returned child tables of %s.%s: %s", database, table,
                       children_tables)

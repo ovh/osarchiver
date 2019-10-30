@@ -443,7 +443,7 @@ class DbBase():
             "FROM information_schema.key_column_usage "\
             "WHERE referenced_table_name IS NOT NULL" \
             " AND referenced_table_schema='{db}'"\
-            " AND referenced_table_name='{table}'".format(
+            " AND table_name='{table}'".format(
                 db=database, table=table)
 
         result = self.db_request(sql=sql,

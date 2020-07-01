@@ -37,6 +37,7 @@ setup(name='Openstack Archiver',
           'Topic :: Software Development :: Libraries :: Python Modules'
       ],
       packages=find_packages(".", exclude=('tests')),
-      install_requires=['arrow', 'configparser', 'PyMySQL', 'numpy'],
-      entry_points={'console_scripts': ['osarchiver=osarchiver.main:run']}
-      )
+      install_requires=[
+          'python-dateutil', 'arrow', 'configparser', 'PyMySQL', 'numpy'
+      ],
+      entry_points={'console_scripts': ['osarchiver=osarchiver.main:run']})

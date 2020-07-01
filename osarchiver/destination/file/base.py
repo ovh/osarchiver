@@ -111,7 +111,12 @@ class File(Destination):
         """
         init stuff
         """
-        os.makedirs(self.directory)
+        # in case of multiple destinations using file backend
+        # the class will be instantiated multiple times
+        # so we need to accept that destination directory
+        # already exist
+        # https://github.com/ovh/osarchiver/issues/11
+        os.makedirs(self.directory, exist_ok=True)
 
     def write(self, database=None, table=None, data=None):
         """

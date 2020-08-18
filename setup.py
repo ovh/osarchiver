@@ -8,18 +8,8 @@ try:
 except ImportError:
     from distutils.core import setup, find_packages
 
-# Determine version from changelog file
-VERSION = None
-if os.path.exists('debian/changelog'):
-    for line in open('debian/changelog').readlines():
-        m = re.search(r'\((.*)-(.*)\)', line)
-        if m:
-            version = m.group(1)
-        if version:
-            break
-
-setup(name='Openstack Archiver',
-      version=version,
+setup(name='Openstack DB archiver',
+      version='0.0.1',
       description="Openstack DB archiver",
       long_description=open('README.md').read(),
       author='OVH SAS',
@@ -37,7 +27,4 @@ setup(name='Openstack Archiver',
           'Topic :: Software Development :: Libraries :: Python Modules'
       ],
       packages=find_packages(".", exclude=('tests')),
-      install_requires=[
-          'python-dateutil', 'arrow', 'configparser', 'PyMySQL', 'numpy'
-      ],
       entry_points={'console_scripts': ['osarchiver=osarchiver.main:run']})

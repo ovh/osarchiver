@@ -61,7 +61,10 @@ OSArchiver reads an INI configuration file in which you can define:
 # Installation
 
 ```
-pip install git+https://github.com/ovh/osarchiver
+git clone https://github.com/ovh/osarchiver.git
+cd osarchiver
+pip install -r requirements.txt
+pip setup.py install
 ```
 
 # osarchiver script

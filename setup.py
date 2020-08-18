@@ -9,7 +9,7 @@ except ImportError:
     from distutils.core import setup, find_packages
 
 setup(name='Openstack DB archiver',
-      version='0.0.1',
+      version='0.1.0',
       description="Openstack DB archiver",
       long_description=open('README.md').read(),
       author='OVH SAS',

@@ -13,6 +13,8 @@ import arrow
 from numpy import array_split
 from osarchiver.source import Source
 from osarchiver.common.db import DbBase
+from sqlalchemy import inspect
+import sqlalchemy_utils
 
 NOT_OS_DB = ['mysql', 'performance_schema', 'information_schema']
 
@@ -41,7 +43,7 @@ class Db(Source, DbBase):
         self.tables = tables
         self.excluded_databases = NOT_OS_DB
         self.excluded_databases.extend([
-            d for d in re.split(r',|;|\n', excluded_databases)
+            d for d in re.split(r'\s*(,|;|\n)\s*', excluded_databases)
             if d not in NOT_OS_DB
         ])
         self.excluded_tables = excluded_tables
@@ -82,7 +84,7 @@ class Db(Source, DbBase):
             self._databases_to_archive = self.get_os_databases()
         else:
             self._databases_to_archive = [
-                d for d in re.split(r',|;|\n', self.databases)
+                d for d in re.split(r'\s*(,|;|\n)\s*', self.databases)
             ]
 
         excluded_databases_regex = \
@@ -99,7 +101,7 @@ class Db(Source, DbBase):
         For a given database, return the list of tables that are eligible to
         archiving.
         - Retrieve tables if needed (*, or empty)
-        - Check that tables ov teh 'deleted_at' column (deleted_column
+        - Check that tables has 'deleted_at' column (deleted_column
         parameter)
         - Exclude tables in excluded_tables
         - Reorder tables depending foreign key
@@ -122,7 +124,7 @@ class Db(Source, DbBase):
             self._tables_to_archive[database] = database_tables
         else:
             self._tables_to_archive[database] = \
-                [t for t in re.split(r',|;|\n', self.tables)
+                [t for t in re.split(r'\s*(,|;|\n)\s*', self.tables)
                  if t in database_tables]
 
         # Step 2: verify that all tables have the deleted column 'deleted_at'
@@ -140,9 +142,9 @@ class Db(Source, DbBase):
         # update self._tables_to_archive with the filtered tables
         self._tables_to_archive[database] = tables
 
-        # Step 3: then exclude to one explicitly given
+        # Step 3: then exclude the one explicitly given
         excluded_tables_regex = "^(" + "|".join(
-            re.split(r',|;|\n', self.excluded_tables)) + ")$"
+            re.split(r'\s*(,|;|\n)\s*', self.excluded_tables)) + ")$"
         logging.debug("Ignoring tables matching '%s'", excluded_tables_regex)
         self._tables_to_archive[database] = [
             t for t in self._tables_to_archive[database]
@@ -151,64 +153,43 @@ class Db(Source, DbBase):
 
         # Step 4 for each table retrieve child tables referencing the parent
         # table and order them childs first, parents then
-        ordered_tables = []
-        for table in self._tables_to_archive[database]:
-            children = self.get_linked_tables(database=database, table=table)
-            for child in children:
-                # never do same things twice
-                if child['table_name'] in ordered_tables:
-                    ordered_tables.remove(child['table_name'])
+        sorted_tables = self.sort_tables(
+            database=database, tables=self._tables_to_archive[database])
+        self._tables_to_archive[database] = sorted_tables
 
-                # check if table was already checked for deleted column
-                if not child['table_name'] in \
-                        self._tables_to_archive[database]:
-                    if not self.table_has_deleted_column(
-                            table=child['table_name'],
-                            database=child['table_schema']):
-                        logging.debug(
-                            "Child table '%s' has not column named "
-                            "'%s', can not handle it", child['table_name'],
-                            self.deleted_column)
-                        continue
-
-                ordered_tables.append(child['table_name'])
-
-        self._tables_to_archive[database] = ordered_tables
         logging.debug(
             "Tables ordered depending foreign key dependencies: "
             "'%s'", self._tables_to_archive[database])
         return self._tables_to_archive[database]
 
-    def get_linked_tables(self, database=None, table=None):
+    def sort_tables(self, database=None, tables=[]):
         """
-        For a given database.table return tables that have a foreign key
-        dependency of the current table
+        Given a DB and a list of tables return the list orderered depending
+        foreign key check in order to get child table before parent table
         """
-        children = self.get_tables_with_fk(database=database, table=table)
-        logging.debug("Ordered tables to archive from %s.%s: %s", database,
-                      table, children)
-
-        children_tables = []
-        for child in children:
-            if child['table_schema'] == database and \
-                    child['table_name'] == table:
-                self.tables_with_circular_fk.append('{db}.{table}'.format(
-                    db=database, table=table))
+        inspector = inspect(self.sqlalchemy_engine)
+        sorted_tables = []
+        logging.debug("Tables to sort: %s", sorted_tables)
+        for table in tables:
+            if not self.table_has_deleted_column(table=table, database=database):
                 continue
+            if table not in sorted_tables:
+                logging.debug("Table %s added to final list", table)
+                sorted_tables.append(table)
+            idx = sorted_tables.index(table)
+            fks = inspector.get_foreign_keys(table, schema=database)
+            logging.debug("Foreign keys of %s: %s", table, fks)
+            for fk in fks:
+                t = fk['referred_table']
 
-            grandchildren = self.get_linked_tables(database=database,
-                                                   table=child['table_name'])
+                if t in sorted_tables:
+                    if sorted_tables.index(t) > idx:
+                        continue
+                    else:
+                        sorted_tables.remove(t)
+                sorted_tables.insert(idx+1, t)
 
-            for grandchild in grandchildren:
-                if grandchild in children_tables:
-                    children_tables.remove(grandchild)
-                children_tables.append(grandchild)
-
-        children_tables.append({'table_name': table, 'table_schema': database})
-        logging.debug("Returned child tables of %s.%s: %s", database, table,
-                      children_tables)
-
-        return children_tables
+        return sorted_tables
 
     def select(self, limit=None, database=None, table=None):
         """

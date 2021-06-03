@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 
-import os
-import re
-
 try:
     from setuptools import setup, find_packages
 except ImportError:
     from distutils.core import setup, find_packages
 
-setup(name='Openstack DB archiver',
-      version='0.1.0',
+setup(name='osarchiver',
+      version='0.2.0',
       description="Openstack DB archiver",
       long_description=open('README.md').read(),
       author='OVH SAS',

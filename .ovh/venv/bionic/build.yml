@@ -1,0 +1,25 @@
+---
+settings:
+  package_name_format: '{{ project.name }}'
+  build_type: package
+  version: '$(/opt/venvs/osarchiver/bin/pip show osarchiver | grep "Version:" | cut -d " " -f 2 | sed -e "s/\.dev[0-9]\+//g")-ovh+$(date "+%Y.%m.%d.%H.%M")+$(lsb_release --codename -s)+${GIFTWRAP_HEAD:-00000000}'
+  base_path: '/opt/venvs/'
+  install_path: '/opt/venvs/{{ project.name }}'
+  force_overwrite: true
+  gerrit_dependencies: false
+projects:
+  - name: osarchiver
+    # Use a virtualenv with pip lower than 21 (18.1 works fine on xenial)
+    # Freeze setuptools version to allow better CI reproductibility
+    # --copies will copy the binaries in the venv rather than relying on the one from the system
+    # Packages will be bigger, but we will be safer running the good version of python no matter the OS
+    # python-build will also install the python in the venv
+    venv_command: 'ovh-build-venv.sh .'
+    fpm_env:
+      - "CRYPTOGRAPHY_DONT_BUILD_RUST=1;"   # NOTE(arnaud) this is failing if we compile RUST, we dont need that anyway
+    fpm_options:
+      - '--epoch 3'
+      - '--description "OSArchiver OpenStack Database Archiver"'
+      - '--post-install "${MANIFESTS_DIR}/files/osarchiver.postinst"'
+      - '--pre-uninstall "${MANIFESTS_DIR}/files/osarchiver.prerm"'
+      - '--architecture all'

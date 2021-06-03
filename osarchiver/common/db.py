@@ -19,6 +19,7 @@ import timeit
 # of pymysql (integrity exception helpers)
 import datetime
 import pymysql
+from sqlalchemy import create_engine
 
 
 class DbBase():
@@ -55,6 +56,7 @@ class DbBase():
         self.bulk_insert = int(bulk_insert)
         self.dry_run = dry_run
         self.metadata = {}
+        self._sqlalchemy_engine = None
         # number of retries when an error occure
         self.max_retries = max_retries
         # how long wait between two retry
@@ -64,6 +66,19 @@ class DbBase():
         # hide some warnings we do not care
         warnings.simplefilter("ignore")
         self.connect()
+
+    @property
+    def sqlalchemy_engine(self):
+        if self._sqlalchemy_engine is None:
+            url = "mysql+pymysql://{user}:{password}@".format(
+                user=self.user, password=self.password)
+            if self.host is not None:
+                url += self.host
+                if self.port is not None:
+                    url += ':{port}'.format(port=self.port)
+            self._sqlalchemy_engine = create_engine(url)
+
+        return self._sqlalchemy_engine
 
     def connect(self):
         """

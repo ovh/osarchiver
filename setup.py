@@ -7,21 +7,6 @@ except ImportError:
 
 setup(name='osarchiver',
       version='0.2.0',
-      description="Openstack DB archiver",
-      long_description=open('README.md').read(),
-      author='OVH SAS',
-      author_email='opensource@ovh.net',
       license='Apache 2.0',
-      url="https://github.com/ovh/osarchiver",
-      classifiers=[
-          'Intended Audience :: Developers',
-          'License :: OSI Approved :: Apache Software License',
-          'Programming Language :: Python',
-          'Programming Language :: Python :: 3.2',
-          'Programming Language :: Python :: 3.3',
-          'Programming Language :: Python :: 3.4',
-          'Programming Language :: Python :: 3.5',
-          'Topic :: Software Development :: Libraries :: Python Modules'
-      ],
-      packages=find_packages(".", exclude=('tests')),
-      entry_points={'console_scripts': ['osarchiver=osarchiver.main:run']})
+      setup_requires=['pbr>=2.0.0'],
+      pbr=True)

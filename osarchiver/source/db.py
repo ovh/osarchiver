@@ -41,12 +41,14 @@ class Db(Source, DbBase):
         """
         self.databases = databases
         self.tables = tables
-        self.excluded_databases = NOT_OS_DB
-        self.excluded_databases.extend([
-            d for d in re.split(r'\s*(,|;|\n)\s*', excluded_databases)
-            if d not in NOT_OS_DB
-        ])
-        self.excluded_tables = excluded_tables
+        self.configured_excluded_databases = [
+            d for d in re.split(',|;|\n', excluded_databases.replace(' ', ''))
+        ]
+        self._excluded_databases = None
+        self.configured_excluded_tables = [
+            d for d in re.split(',|;|\n', excluded_tables.replace(' ', ''))
+        ]
+        self._excluded_tables = None
         self.archive_data = archive_data
         self.delete_data = delete_data
         self.destination = destination
@@ -70,6 +72,26 @@ class Db(Source, DbBase):
                                       name=self.name, tables=self.tables,
                                       host=self.host)
 
+    @property
+    def excluded_databases(self):
+        if self._excluded_databases is not None:
+            return self._excluded_databases
+
+        excluded_db_set = set(self.configured_excluded_databases)
+        excluded_db_set.update(set(NOT_OS_DB))
+        self._excluded_databases = list(excluded_db_set)
+
+        return self._excluded_databases
+
+    @property
+    def excluded_tables(self):
+        if self._excluded_tables is not None:
+            return self._excluded_tables
+
+        self._excluded_tables = self.configured_excluded_tables
+
+        return self._excluded_tables
+
     def databases_to_archive(self):
         """
         Return a list of databases that are eligibles to archiving. If no
@@ -84,7 +106,7 @@ class Db(Source, DbBase):
             self._databases_to_archive = self.get_os_databases()
         else:
             self._databases_to_archive = [
-                d for d in re.split(r'\s*(,|;|\n)\s*', self.databases)
+                d for d in re.split(',|;|\n', self.databases.replace(' ', ''))
             ]
 
         excluded_databases_regex = \
@@ -124,7 +146,7 @@ class Db(Source, DbBase):
             self._tables_to_archive[database] = database_tables
         else:
             self._tables_to_archive[database] = \
-                [t for t in re.split(r'\s*(,|;|\n)\s*', self.tables)
+                [t for t in re.split(',|;|\n', self.tables.replace(' ', ''))
                  if t in database_tables]
 
         # Step 2: verify that all tables have the deleted column 'deleted_at'
@@ -143,8 +165,7 @@ class Db(Source, DbBase):
         self._tables_to_archive[database] = tables
 
         # Step 3: then exclude the one explicitly given
-        excluded_tables_regex = "^(" + "|".join(
-            re.split(r'\s*(,|;|\n)\s*', self.excluded_tables)) + ")$"
+        excluded_tables_regex = "^(" + "|".join(self.excluded_tables) + ")$"
         logging.debug("Ignoring tables matching '%s'", excluded_tables_regex)
         self._tables_to_archive[database] = [
             t for t in self._tables_to_archive[database]

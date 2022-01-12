@@ -56,11 +56,25 @@ class Config():
 
     def sections(self):
         """
-        return call to sections() of ConfigPärser for the config file
+        return call to sections() of ConfigParser for the config file
         """
         if self.loaded == 0:
             self.load()
         return self.parser.sections()
+
+    def section(self, name, default=True):
+        """
+        return a dict of key/value for the given section
+        if defaults is set to False, it will remove defaults value from the section
+        """
+        if not name or not self.parser.has_section(name):
+            return {}
+        default_keys = []
+        if not default:
+            default_keys = [k for k, v in self.parser.items('DEFAULT')]
+        return {
+            k: v for k, v in self.parser.items(name) if k not in default_keys
+        }
 
     @property
     def archivers(self):
@@ -89,6 +103,7 @@ class Config():
             }
             args_factory['name'] = re.sub('^(src|dst):', '', section)
             args_factory['dry_run'] = self.dry_run
+            args_factory['conf'] = self
             logging.debug(
                 "'%s' factory parameters: %s", args_factory['name'], {
                     k: v if k != 'password' else '***********'
@@ -135,7 +150,8 @@ class Config():
                 self._archivers.append(
                     Archiver(name=re.sub('^archiver:', '', archiver),
                              src=src,
-                             dst=destinations))
+                             dst=destinations,
+                             conf=self))
 
         return self._archivers
 

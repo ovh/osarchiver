@@ -63,7 +63,7 @@ class Db(Source, DbBase):
         # children data
         self.now = arrow.utcnow().format(fmt='YYYY-MM-DD HH:mm:ss')
         self.where = where.format(now=self.now)
-        Source.__init__(self, backend='db', name=name)
+        Source.__init__(self, backend='db', name=name, conf=kwargs.get('conf', None))
         DbBase.__init__(self, **kwargs)
 
     def __repr__(self):

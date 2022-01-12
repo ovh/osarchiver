@@ -14,12 +14,13 @@ class Destination(metaclass=ABCMeta):
     The Destination absrtact base class
     """
 
-    def __init__(self, name=None, backend='db'):
+    def __init__(self, name=None, backend='db', conf=None):
         """
         Destination object is defined by a name and a backend
         """
         self.name = name
         self.backend = backend
+        self.conf = conf
 
     @abstractmethod
     def write(self, database=None, table=None, data=None):

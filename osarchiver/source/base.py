@@ -13,12 +13,14 @@ class Source(metaclass=ABCMeta):
     """
     The source absrtact base class
     """
-    def __init__(self, name=None, backend=None):
+
+    def __init__(self, name=None, backend=None, conf=None):
         """
         Source object is defined by a name and a backend
         """
         self.name = name
         self.backend = backend
+        self.conf = conf
 
     @abstractmethod
     def read(self, **kwargs):

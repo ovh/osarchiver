@@ -13,6 +13,7 @@ from importlib import import_module
 from abc import ABCMeta, abstractmethod
 import arrow
 from osarchiver.destination.base import Destination
+from osarchiver.destination.file.remote_store import factory as remote_store_factory
 
 
 class File(Destination):
@@ -27,6 +28,7 @@ class File(Destination):
                  formats=None,
                  dry_run=False,
                  source=None,
+                 remote_store=[],
                  **kwargs):
         """
         Initiator
@@ -42,14 +44,16 @@ class File(Destination):
         """
         formats = formats or ['csv']
         # Archive formats: zip, tar, gztar, bztar, xztar
-        Destination.__init__(self, backend='file')
-        self.directory = str(directory).format(
-            date=arrow.now().strftime('%F_%T'))
+        Destination.__init__(self, backend='file',
+                             conf=kwargs.get('conf', None))
+        self.date = arrow.now().strftime('%F_%T')
+        self.directory = str(directory).format(date=self.date)
         self.archive_format = archive_format
         self.formats = re.split(r'\n|,|;', formats)
         self.formatters = {}
         self.source = source
         self.dry_run = dry_run
+        self.remote_store = re.split(r'\n|,|;', remote_store)
 
         self.init()
 
@@ -66,7 +70,23 @@ class File(Destination):
         compress file
         """
         self.close()
-        self.compress()
+        compressed_files = self.compress()
+        # Send log files remotely if needed
+        if self.remote_store:
+            logging.info("Sending osarchiver files remotely")
+            for store in self.remote_store:
+                logging.info("Sending remotely on '%s'", store)
+                # Retrieve store config options
+                store_options = self.conf.section(
+                    'remote_store:%s' % store, default=False)
+                remote_store = remote_store_factory(
+                    name=store, date=self.date, store_options=store_options)
+                if self.dry_run:
+                    logging.info(
+                        "As we are in dry-run mode we do not send on %s store", store)
+                    continue
+                remote_store.send(files=compressed_files)
+
         if self.dry_run:
             try:
                 logging.info(
@@ -92,6 +112,7 @@ class File(Destination):
         """
         Compress all the files open by formatters
         """
+        compressed_files = []
         for file_to_compress in self.files():
             logging.info("Archiving %s using %s format", file_to_compress,
                          self.archive_format)
@@ -105,7 +126,9 @@ class File(Destination):
             if compressed_file:
                 logging.info("Compressed file available at %s",
                              compressed_file)
+                compressed_files.append(compressed_file)
                 os.remove(file_to_compress)
+        return compressed_files
 
     def init(self):
         """

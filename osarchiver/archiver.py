@@ -15,7 +15,8 @@ class Archiver():
     """
     Archiver class
     """
-    def __init__(self, name=None, src=None, dst=None):
+
+    def __init__(self, name=None, src=None, dst=None, conf=None):
         """
         instantiator, take one source and a list of destinations
         """
@@ -24,10 +25,12 @@ class Archiver():
         self.src = src
         # Pool of destinations
         self.dst = dst or []
+        # Config parser instance
+        self.conf = conf
 
     def __repr__(self):
         return "Archiver {name}: {src} -> {dst}".\
-                format(name=self.name, src=self.src, dst=self.dst)
+            format(name=self.name, src=self.src, dst=self.dst)
 
     def read(self):
         """

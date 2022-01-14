@@ -25,10 +25,10 @@ class File(Destination):
     def __init__(self,
                  directory=None,
                  archive_format='tar',
-                 formats=None,
+                 formats='csv',
                  dry_run=False,
                  source=None,
-                 remote_store=[],
+                 remote_store=None,
                  **kwargs):
         """
         Initiator
@@ -42,7 +42,7 @@ class File(Destination):
         :param bool dry_run: if enable  will not write for real
         :param source: the Source instance
         """
-        formats = formats or ['csv']
+
         # Archive formats: zip, tar, gztar, bztar, xztar
         Destination.__init__(self, backend='file',
                              conf=kwargs.get('conf', None))
@@ -53,7 +53,9 @@ class File(Destination):
         self.formatters = {}
         self.source = source
         self.dry_run = dry_run
-        self.remote_store = re.split(r'\n|,|;', remote_store)
+        self.remote_store = None
+        if remote_store is not None:
+            self.remote_store = re.split(r'\n|,|;', remote_store)
 
         self.init()
 

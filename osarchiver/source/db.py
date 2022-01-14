@@ -63,7 +63,8 @@ class Db(Source, DbBase):
         # children data
         self.now = arrow.utcnow().format(fmt='YYYY-MM-DD HH:mm:ss')
         self.where = where.format(now=self.now)
-        Source.__init__(self, backend='db', name=name, conf=kwargs.get('conf', None))
+        Source.__init__(self, backend='db', name=name,
+                        conf=kwargs.get('conf', None))
         DbBase.__init__(self, **kwargs)
 
     def __repr__(self):
@@ -413,6 +414,10 @@ class Db(Source, DbBase):
                     logging.debug(
                         "Dichotomy delete with a set of %s data "
                         "length", len(subdata))
+                    # Add a sleep period because in case of error in delete_set
+                    # we never sleep, it will avoid some lock wait timeout for
+                    # incoming requests
+                    time.sleep(int(self.delete_loop_delay))
                     self.delete(database=database,
                                 table=table,
                                 data=subdata,

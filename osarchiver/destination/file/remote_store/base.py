@@ -8,6 +8,7 @@ RemoteStore abstract base class file
 
 from abc import ABCMeta, abstractmethod
 import arrow
+import re
 
 
 class RemoteStore(metaclass=ABCMeta):
@@ -23,7 +24,7 @@ class RemoteStore(metaclass=ABCMeta):
         self.date = date or arrow.now().strftime('%F_%T')
         self.backend = backend
         self.store_options = {
-            k.lstrip('opt_'): v for k, v in store_options.items() if k.startswith('opt_')
+            re.sub('^opt_', '', k): v for k, v in store_options.items() if k.startswith('opt_')
         }
 
     @abstractmethod

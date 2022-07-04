@@ -381,6 +381,10 @@ class DbBase():
                 if retry > self.max_retries:
                     raise sql_exception
                 continue
+            finally:
+                # We want to rollback regardless the error
+                # This to prevent some undo log to be stacked on server side
+                self.connection.rollback()
 
     def get_os_databases(self):
         """

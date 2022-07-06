@@ -351,9 +351,11 @@ class Db(Source, DbBase):
                         ids=ids,
                         pk=primary_key,
                         limit=limit)
-                foreign_key_check = \
-                    '{db}.{table}'.format(db=database, table=table) \
-                    not in self.tables_with_circular_fk
+                foreign_key_check = None
+                if '{db}.{table}'.format(db=database, table=table) \
+                    in self.tables_with_circular_fk:
+                    foreign_key_check = False
+
                 count = self.db_request(sql=sql,
                                         foreign_key_check=foreign_key_check,
                                         database=database,

@@ -17,7 +17,7 @@ import time
 import timeit
 # need to include datetime to handle some result
 # of pymysql (integrity exception helpers)
-import datetime
+import datetime  # noqa
 import pymysql
 from sqlalchemy import create_engine
 
@@ -41,6 +41,7 @@ class DbBase():
                  bulk_insert=1000,
                  retry_time_limit=2,
                  delete_loop_delay=2,
+                 foreign_key_check=True,
                  **kwargs):
         """
         instantiator of database base class
@@ -62,6 +63,7 @@ class DbBase():
         # how long wait between two retry
         self.retry_time_limit = retry_time_limit
         self.delete_loop_delay = delete_loop_delay
+        self.foreign_key_check = foreign_key_check
 
         # hide some warnings we do not care
         warnings.simplefilter("ignore")
@@ -322,6 +324,8 @@ class DbBase():
         values = values or []
 
         fetch_args = fetch_args or {}
+        if foreign_key_check is None:
+            foreign_key_check = self.foreign_key_check
         if self.dry_run:
             foreign_key_check = False
             logging.debug("Force disabling foreign key check because we are in"

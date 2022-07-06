@@ -135,7 +135,7 @@ dst: file, db
   one backend (db) but it may be easily extended
 * Format **[src:*name*]**
 * configuration parameters:
-    * **backend**\*: the name of backend to use, only `db` is supported
+    * **backend**: the name of backend to use, only `db` is supported
     * **retention**: 12 MONTH
     * **archive_data**: 0 or 1 if set to 1 expect a dest to archive the data else
       won't run the archiving step just the delete step.
@@ -150,7 +150,7 @@ dst: file, db
   two backends (db for datatabase and file [csv, sql]) and may be extended
 * Format **[dst:*name*]**
 * configuration parameters:
-    * **backend**\*: the name of backend to use, `db` or `file`
+    * **backend**: the name of backend to use, `db` or `file`
     * *backend specific options*
 
 
@@ -171,6 +171,8 @@ dst: file, db
       the deleted_column to be archived
     * **where**: the literal SQL where applied to the select statement
     Ex: where=${deleted_column} <= SUBDATE(NOW(), INTERVAL ${retention})
+    * **foreign_key_check**: true or false if set to false disable foreign key
+      check (default true)
     * **retention**: how long time of data to keep in database (SQL format: 12
       MONTH, 1 DAY, etc..)
     * **excluded_databases**: comma, cariage return or semicolon separated
@@ -182,7 +184,7 @@ dst: file, db
     default suffix '_archive' is applied if you archive on same host than
     source without setting a db_suffix or table_suffix (avoid reading and
     writing on the same db.table)
-    * **table_suffix**: apply a suffix to the archinving table if specified
+    * **table_suffix**: apply a suffix to the archiving table if specified
 
 ### file
 * Description: is the file archiving destination type, it writes SQL data in a

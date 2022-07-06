@@ -13,7 +13,7 @@ from osarchiver.archiver import Archiver
 from osarchiver.destination import factory as dst_factory
 from osarchiver.source import factory as src_factory
 
-BOOLEAN_OPTIONS = ['delete_data', 'archive_data', 'enable']
+BOOLEAN_OPTIONS = ['delete_data', 'archive_data', 'enable', 'foreign_key_check']
 
 
 class Config():

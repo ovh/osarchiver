@@ -2,7 +2,7 @@ arrow==0.17.0
 configparser==4.0.2
 importlib-resources==3.2.1
 numpy==1.18.5
-PyMySQL==0.10.1
+PyMySQL==1.1.1
 python-dateutil==2.8.1
 six==1.15.0
 python_swiftclient==3.13.0
